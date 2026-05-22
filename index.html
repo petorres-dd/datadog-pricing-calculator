@@ -485,12 +485,7 @@ const CATALOG = {
 
 const FAMILY_ORDER = ["Infrastructure","Network Monitoring","Serverless","Cloud Cost","APM","DBM","Logs","Security","Code Security","Digital Experience","Software Delivery","Service Management","AI Observability","AI"];
 const ICONS = {"Infrastructure":"🖥️","Network Monitoring":"🌐","Serverless":"⚡","Cloud Cost":"☁️","APM":"📊","DBM":"🗄️","Logs":"📋","Security":"🔒","Code Security":"🛡️","Digital Experience":"👁️","Software Delivery":"🚀","Service Management":"📟","AI Observability":"🤖","AI":"✨"};
-const TIERS = [
-  {t:500,    l:"Starter",    c:"#6b7280", bg:"#f3f4f6", d:"Acesso à plataforma base"},
-  {t:5000,   l:"Growth",     c:"#2563eb", bg:"#eff6ff", d:"Suporte técnico dedicado"},
-  {t:25000,  l:"Scale",      c:"#7c3aed", bg:"#f5f3ff", d:"Desconto de volume + TAM"},
-  {t:100000, l:"Enterprise", c:"#b45309", bg:"#fffbeb", d:"Executive sponsor + SLA premium"},
-];
+const TRAINING_MRR = 500; // MRR mínimo para desbloquear treinamento gratuito (~$2.500)
 const QUICK = [
   {l:"3 hosts K8s básico",  t:"Cliente usa 3 nodes Kubernetes. Precisa de infrastructure monitoring básico."},
   {l:"10h + APM + Logs",    t:"10 hosts com APM Pro e logs por 30 dias, estimativa de 50 milhões de eventos por mês."},
@@ -575,44 +570,41 @@ function renderCart() {
     });
   });
 
-  // benefits bar
-  const maxT = TIERS[TIERS.length-1].t;
-  let dotsHtml = '', trackHtml = '';
-  TIERS.forEach((tier,i) => {
-    const done = annual >= tier.t;
-    dotsHtml += `<div class="benefit-dot">
-      <div class="dot-circle${done?' done':''}" style="${done?'background:'+tier.c+';border-color:'+tier.c:''}">
-        ${done?'✓':'○'}
-      </div>
-      <span class="dot-name" style="${done?'color:'+tier.c:''}">${tier.l}</span>
-      <span class="dot-threshold">${tier.t>=1000?'$'+(tier.t/1000)+'K':'$'+tier.t}</span>
-    </div>`;
-    const prev = i===0?0:TIERS[i-1].t;
-    const segW = ((tier.t-prev)/maxT)*100;
-    const fill = annual>=tier.t?100:annual>prev?Math.round(((annual-prev)/(tier.t-prev))*100):0;
-    trackHtml += `<div class="track-seg" style="width:${segW}%"><div class="track-fill" style="background:${tier.c};width:${fill}%"></div></div>`;
-  });
+  // benefits bar — treinamento gratuito ao atingir MRR $500
+  const MRR_THRESHOLD = TRAINING_MRR;
+  const unlocked = monthly >= MRR_THRESHOLD;
+  const progress = Math.min(100, Math.round((monthly / MRR_THRESHOLD) * 100));
+  const toUnlock = Math.max(0, MRR_THRESHOLD - monthly);
 
-  const unlocked = TIERS.filter(t => annual >= t.t);
-  const cur = unlocked.length>0?unlocked[unlocked.length-1]:null;
-  const nxt = TIERS.find(t => annual < t.t)||null;
-  let statusHtml = '';
-  if(annual < 500) {
-    statusHtml = `<div class="benefits-status">Adicione <strong style="color:var(--dd-purple)">${fmt(500-annual)}/ano</strong> para desbloquear o primeiro nível de benefícios.</div>`;
-  } else if(nxt) {
-    const prev2 = cur?cur.t:0;
-    const prog = Math.min(100,Math.round(((annual-prev2)/(nxt.t-prev2))*100));
-    statusHtml = `<div class="tier-card" style="background:${cur.bg};border:1px solid ${cur.c}33">
-      <div class="tier-card-title" style="color:${cur.c}">✅ Nível ${cur.l} desbloqueado</div>
-      <div class="tier-card-desc">${cur.d}</div>
-      <div class="tier-card-next">Faltam <strong>${fmt(nxt.t-annual)}/ano</strong> para <strong>${nxt.l}</strong> — ${nxt.d}</div>
-      <div class="tier-mini-bar"><div class="tier-mini-fill" style="background:${cur.c};width:${prog}%"></div></div>
-    </div>`;
+  let benefitsHtml = '';
+  if (!unlocked) {
+    benefitsHtml = `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--text-mid);font-weight:600">🎓 Treinamento Datadog gratuito</span>
+          <span style="font-size:11px;color:var(--text-faint);font-family:'DM Mono',monospace">${fmt(monthly)}<span style="color:#d1d5db"> / ${fmt(MRR_THRESHOLD)} MRR</span></span>
+        </div>
+        <div style="height:8px;background:var(--border-light);border-radius:20px;overflow:hidden;margin-bottom:8px">
+          <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#632CA6,#8b5cf6);border-radius:20px;transition:width .5s ease"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5">
+          Faltam <strong style="color:var(--dd-purple)">${fmt(toUnlock)}/mês</strong> de MRR para desbloquear
+          <strong>1 treinamento oficial Datadog</strong> no valor de <strong>~$2.500</strong> gratuitamente.
+        </div>
+      </div>`;
   } else {
-    statusHtml = `<div class="tier-card" style="background:#fffbeb;border:1px solid #fcd34d">
-      <div class="tier-card-title" style="color:#b45309">🏆 Nível Enterprise desbloqueado!</div>
-      <div class="tier-card-desc">Executive sponsor dedicado + SLA premium + benefícios customizados.</div>
-    </div>`;
+    benefitsHtml = `
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:4px">🎉 Treinamento gratuito desbloqueado!</div>
+        <div style="font-size:12px;color:#166534;line-height:1.55">
+          MRR mínimo de <strong>${fmt(MRR_THRESHOLD)}</strong> atingido. O cliente tem direito a
+          <strong>1 treinamento oficial Datadog</strong> no valor de <strong>~$2.500</strong> sem custo adicional.
+        </div>
+        <div style="margin-top:8px;height:8px;background:#bbf7d0;border-radius:20px;overflow:hidden">
+          <div style="height:100%;width:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:20px"></div>
+        </div>
+        <div style="font-size:10px;color:#16a34a;margin-top:5px;font-weight:600">✓ MRR atual: ${fmt(monthly)}/mês</div>
+      </div>`;
   }
 
   panel.innerHTML = `
@@ -650,10 +642,8 @@ function renderCart() {
 
     <!-- Benefits -->
     <div class="card" style="margin-top:12px">
-      <span class="card-label">Benefícios por volume (ARR)</span>
-      <div class="benefits-dots">${dotsHtml}</div>
-      <div class="benefits-track">${trackHtml}</div>
-      ${statusHtml}
+      <span class="card-label">Benefício por MRR</span>
+      ${benefitsHtml}
     </div>
 
     <!-- Export -->

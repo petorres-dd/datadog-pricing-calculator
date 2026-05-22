@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datadog Pricing Calculator · LATAM CAE · Maio 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dd-purple: #632CA6;
+    --dd-purple-light: #f3f0fa;
+    --dd-purple-mid: #d8b4fe;
+    --dd-purple-dark: #4c1d95;
+    --border: #e5e7eb;
+    --border-light: #f3f4f6;
+    --text: #111827;
+    --text-mid: #374151;
+    --text-muted: #6b7280;
+    --text-faint: #9ca3af;
+    --bg: #f8f7fc;
+    --bg-card: #ffffff;
+    --bg-row: #f9fafb;
+    --green: #059669;
+    --amber: #92400e;
+    --amber-bg: #fffbeb;
+    --amber-border: #fcd34d;
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    --violet: #7c3aed;
+    --violet-bg: #f5f3ff;
+    --gold: #b45309;
+    --gold-bg: #fffbeb;
+    --radius: 10px;
+    --radius-sm: 7px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(99,44,166,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+  /* ── Layout ── */
+  .page { max-width: 1060px; margin: 0 auto; padding: 20px 16px 48px; }
+  .grid { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; margin-top: 16px; }
+
+  /* ── Disclaimer ── */
+  .disclaimer {
+    background: var(--amber-bg); border: 1px solid var(--amber-border);
+    border-radius: var(--radius); padding: 11px 16px; margin-bottom: 18px;
+    display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; color: var(--amber);
+  }
+  .disclaimer strong { font-weight: 600; }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: center; gap: 14px;
+    padding-bottom: 18px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .logo-box {
+    width: 38px; height: 38px; background: var(--dd-purple); border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(99,44,166,.35);
+  }
+  .header-title h1 { font-size: 19px; font-weight: 700; line-height: 1; }
+  .header-title p  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .header-spacer { flex: 1; }
+  .date-badge {
+    display: flex; flex-direction: column; align-items: center;
+    background: #fff; border: 2px solid var(--dd-purple); border-radius: 10px;
+    padding: 6px 15px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(99,44,166,.12);
+  }
+  .date-badge .date-label { font-size: 9px; font-weight: 700; color: var(--dd-purple); letter-spacing: .1em; text-transform: uppercase; }
+  .date-badge .date-main  { font-size: 16px; font-weight: 800; color: var(--dd-purple); line-height: 1.1; }
+  .date-badge .date-sub   { font-size: 9px; color: var(--text-faint); margin-top: 1px; font-family: 'DM Mono', monospace; }
+  .cart-badge {
+    background: var(--dd-purple-light); border: 1px solid var(--dd-purple-mid);
+    border-radius: 20px; padding: 5px 13px; font-size: 12px; font-weight: 600;
+    color: var(--dd-purple); flex-shrink: 0; display: none;
+  }
+  .cart-badge.show { display: block; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    padding: 9px 22px; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: none; border: none; border-bottom: 2.5px solid transparent;
+    color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+    transition: color .15s, border-color .15s;
+  }
+  .tab-btn.active { color: var(--dd-purple); border-bottom-color: var(--dd-purple); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 15px 17px;
+    box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 12px; }
+  .card-label {
+    font-size: 10.5px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: .07em; text-transform: uppercase; margin-bottom: 10px; display: block;
+  }
+
+  /* ── Offer type ── */
+  .offer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+  .offer-opt {
+    text-align: center; padding: 9px 4px; border-radius: var(--radius-sm);
+    cursor: pointer; border: 1px solid var(--border); background: var(--bg-row);
+    transition: all .15s; user-select: none;
+  }
+  .offer-opt.active { background: var(--dd-purple-light); border-color: var(--dd-purple); }
+  .offer-opt .opt-label { font-size: 12px; font-weight: 600; color: var(--text-mid); }
+  .offer-opt.active .opt-label { color: var(--dd-purple); }
+  .offer-opt .opt-sub   { font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+  .offer-opt.active .opt-sub { color: #8b5cf6; }
+
+  /* ── Product list in cart ── */
+  .cart-list { max-height: 320px; overflow-y: auto; }
+  .cart-family-label {
+    font-size: 10px; font-weight: 700; color: var(--text-faint);
+    text-transform: uppercase; letter-spacing: .08em; padding: 6px 0 3px;
+  }
+  .cart-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; background: var(--bg-row);
+    border-radius: 8px; border: 1px solid var(--border-light); margin-bottom: 4px;
+  }
+  .cart-row-info { flex: 1; min-width: 0; }
+  .cart-row-name { font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cart-row-price { font-size: 11px; color: var(--text-muted); }
+  .cart-row-price .price-val { color: var(--dd-purple); font-weight: 600; }
+  .cart-row-allot { font-size: 10px; color: var(--green); }
+  .qty-input {
+    width: 50px; padding: 4px 6px; font-size: 13px; text-align: center;
+    border-radius: 6px; border: 1px solid var(--border); font-family: 'DM Sans', sans-serif;
+    background: #fff;
+  }
+  .remove-btn {
+    background: none; border: none; cursor: pointer; color: #d1d5db;
+    font-size: 18px; line-height: 1; padding: 2px; flex-shrink: 0;
+  }
+  .remove-btn:hover { color: #ef4444; }
+  .cart-empty { text-align: center; padding: 22px 0; color: var(--text-faint); font-size: 13px; }
+  .cart-empty-icon { font-size: 28px; margin-bottom: 7px; }
+  .cart-clear { font-size: 11px; color: var(--text-faint); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+  /* ── Totals ── */
+  .totals-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .totals-row span:first-child { color: var(--text-muted); }
+  .totals-divider { height: 1px; background: var(--border-light); margin: 5px 0 7px; }
+  .arr-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .arr-label { font-size: 13px; font-weight: 700; }
+  .arr-value { font-size: 21px; font-weight: 800; color: var(--dd-purple); font-family: 'DM Mono', monospace; }
+
+  /* ── Benefits bar ── */
+  .benefits-dots { display: flex; justify-content: space-between; margin-bottom: 7px; }
+  .benefit-dot { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+  .dot-circle {
+    width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e5e7eb;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #d1d5db; font-weight: 700; transition: all .3s;
+  }
+  .dot-circle.done { color: #fff; }
+  .dot-name { font-size: 9px; font-weight: 700; color: var(--text-faint); text-align: center; line-height: 1.2; }
+  .dot-threshold { font-size: 8px; color: #c4b5fd; text-align: center; font-family: 'DM Mono', monospace; }
+  .benefits-track {
+    height: 6px; background: var(--border-light); border-radius: 4px;
+    overflow: hidden; margin-bottom: 10px; display: flex;
+  }
+  .track-seg { position: relative; overflow: hidden; }
+  .track-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0; transition: width .5s ease; }
+  .benefits-status { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .tier-card { border-radius: 8px; padding: 9px 11px; }
+  .tier-card-title { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+  .tier-card-desc  { font-size: 11px; color: var(--text-mid); margin-bottom: 5px; }
+  .tier-card-next  { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
+  .tier-mini-bar { height: 3px; background: #e5e7eb; border-radius: 2px; }
+  .tier-mini-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+
+  /* ── Export btn ── */
+  .export-btn {
+    width: 100%; padding: 10px 0; border-radius: 8px; font-size: 13px; font-weight: 600;
+    background: var(--bg-row); color: var(--text-mid); border: 1px solid var(--border);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; margin-top: 12px;
+  }
+  .export-btn:hover:not(:disabled) { background: var(--border-light); }
+  .export-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .export-btn.success { background: var(--green); color: #fff; border-color: var(--green); }
+  .legal-notes { font-size: 10px; color: var(--text-faint); line-height: 1.7; margin-top: 10px; }
+
+  /* ── Chat (AI tab) ── */
+  .chat-box {
+    background: var(--bg-row); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; min-height: 340px; max-height: 420px;
+    overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+  }
+  .msg { display: flex; flex-direction: column; }
+  .msg.user  { align-items: flex-end; }
+  .msg.bot   { align-items: flex-start; }
+  .bubble {
+    max-width: 88%; padding: 10px 14px; border-radius: 12px;
+    font-size: 14px; line-height: 1.55; white-space: pre-wrap;
+  }
+  .msg.user .bubble { background: var(--dd-purple); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot  .bubble { background: #fff; border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
+  .msg.bot.loading .bubble { opacity: .45; }
+  .quick-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .quick-btn {
+    padding: 5px 12px; font-size: 12px; border-radius: 20px; cursor: pointer;
+    background: var(--dd-purple-light); color: var(--dd-purple); border: 1px solid var(--dd-purple-mid);
+    font-family: 'DM Sans', sans-serif; font-weight: 500; transition: opacity .15s;
+  }
+  .quick-btn:hover { opacity: .8; }
+  .chat-input-row { display: flex; gap: 8px; margin-top: 4px; }
+  .chat-textarea {
+    flex: 1; height: 72px; resize: none; padding: 10px 12px; font-size: 14px;
+    border-radius: 8px; border: 1px solid var(--border); font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color .15s;
+  }
+  .chat-textarea:focus { border-color: var(--dd-purple); box-shadow: 0 0 0 3px rgba(99,44,166,.1); }
+  .chat-send {
+    padding: 0 18px; background: var(--dd-purple); color: #fff; border: none;
+    border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
+    align-self: flex-end; height: 40px; font-family: 'DM Sans', sans-serif;
+    transition: opacity .15s; flex-shrink: 0;
+  }
+  .chat-send:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ── Manual tab ── */
+  .search-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .search-input {
+    flex: 1; padding: 9px 13px; font-size: 13px; border-radius: 8px;
+    border: 1px solid var(--border); font-family: 'DM Sans', sans-serif; outline: none;
+    transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--dd-purple); }
+  .search-clear { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-faint); }
+  .family-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+  .family-pill {
+    padding: 4px 11px; font-size: 11px; border-radius: 20px; cursor: pointer;
+    background: var(--border-light); color: var(--text-muted); border: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all .12s;
+  }
+  .family-pill.active { background: var(--dd-purple); color: #fff; border-color: var(--dd-purple); font-weight: 600; }
+  .product-groups { display: flex; flex-direction: column; gap: 8px; max-height: 520px; overflow-y: auto; }
+  .prod-group { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .prod-group-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: var(--bg-row); cursor: pointer; border: none;
+    width: 100%; font-family: 'DM Sans', sans-serif; border-bottom: 1px solid transparent;
+    transition: background .1s;
+  }
+  .prod-group-header:hover { background: #f3f4f6; }
+  .prod-group-header.open { border-bottom-color: var(--border); }
+  .prod-group-title { font-size: 13px; font-weight: 700; color: var(--text-mid); }
+  .prod-group-right { display: flex; align-items: center; gap: 8px; }
+  .selected-badge { font-size: 11px; background: var(--dd-purple-light); color: var(--dd-purple); padding: 2px 9px; border-radius: 10px; font-weight: 700; }
+  .prod-group-chevron { font-size: 11px; color: var(--text-faint); }
+  .prod-group-body { display: none; }
+  .prod-group-body.open { display: block; }
+  .prod-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: #fff; border-bottom: 1px solid var(--border-light);
+    border-left: 3px solid transparent; transition: background .1s, border-color .1s;
+  }
+  .prod-row.in-cart { background: #faf8ff; border-left-color: var(--dd-purple); }
+  .prod-row-check { accent-color: var(--dd-purple); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+  .prod-row-info { flex: 1; min-width: 0; }
+  .prod-row-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+  .prod-row.in-cart .prod-row-name { color: var(--dd-purple); font-weight: 700; }
+  .prod-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .prod-row-meta .allot-flag { color: var(--green); }
+  .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .qty-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+    background: #fff; cursor: pointer; font-size: 15px; color: var(--text-mid);
+    display: flex; align-items: center; justify-content: center; font-weight: 500;
+  }
+  .qty-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .add-btn {
+    padding: 4px 13px; font-size: 12px; border-radius: 20px; cursor: pointer;
+    background: transparent; color: var(--text-muted); border: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif; flex-shrink: 0; transition: all .12s;
+  }
+  .add-btn:hover { background: var(--dd-purple-light); color: var(--dd-purple); border-color: var(--dd-purple-mid); }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  .footer p { font-size: 11px; color: var(--text-faint); line-height: 1.5; }
+  .privacy-link { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; padding: 28px 28px 24px;
+    max-width: 560px; width: 100%; max-height: 80vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .modal-header h2 { font-size: 16px; font-weight: 700; }
+  .modal-close { background: none; border: none; cursor: pointer; font-size: 22px; color: var(--text-faint); line-height: 1; }
+  .modal-section { margin-bottom: 16px; }
+  .modal-section h3 { font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 4px; }
+  .modal-section p  { font-size: 12px; color: var(--text-muted); line-height: 1.65; }
+  .modal-footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .modal-footer p { font-size: 11px; color: var(--text-faint); line-height: 1.5; }
+  .modal-ok {
+    margin-top: 20px; width: 100%; padding: 10px 0; border-radius: 8px;
+    background: var(--dd-purple); color: #fff; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Disclaimer -->
+  <div class="disclaimer">
+    <span style="font-size:18px;flex-shrink:0;margin-top:1px">⚠️</span>
+    <div><strong>Esta não é uma calculadora oficial da Datadog.</strong> Ferramenta de apoio interno para Account Executives — fins exclusivamente informativos. Preços baseados na tabela de <strong>maio de 2026</strong>. Impostos não inclusos. Não constitui proposta comercial ou cotação vinculante.</div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-box">D</div>
+    <div class="header-title">
+      <h1>Datadog Pricing Calculator</h1>
+      <p>LATAM CAE · Uso interno</p>
+    </div>
+    <div class="header-spacer"></div>
+    <div class="date-badge">
+      <span class="date-label">Tabela de preços</span>
+      <span class="date-main">Maio 2026</span>
+      <span class="date-sub">21/05/2026</span>
+    </div>
+    <div class="cart-badge" id="cartBadge"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('ai')">🤖 Quote Assistant (IA)</button>
+    <button class="tab-btn"        onclick="switchTab('manual')">📋 Calculadora Manual</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid">
+    <!-- Left panel -->
+    <div>
+      <!-- AI Tab -->
+      <div class="tab-panel active" id="tab-ai">
+        <div class="chat-box" id="chatBox"></div>
+        <div class="quick-row" id="quickRow"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-textarea" id="chatInput" placeholder="Descreva o ambiente do cliente... (Enter para enviar, Shift+Enter nova linha)"></textarea>
+          <button class="chat-send" id="chatSend" onclick="sendChat()">Enviar ↗</button>
+        </div>
+      </div>
+
+      <!-- Manual Tab -->
+      <div class="tab-panel" id="tab-manual">
+        <div class="search-row">
+          <input class="search-input" id="searchInput" placeholder="🔍  Buscar produto..." oninput="renderManual()">
+          <button class="search-clear" onclick="document.getElementById('searchInput').value='';renderManual()">✕</button>
+        </div>
+        <div class="family-pills" id="familyPills"></div>
+        <div class="product-groups" id="productGroups"></div>
+      </div>
+    </div>
+
+    <!-- Right: Cart -->
+    <div id="cartPanel"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>© Datadog, Inc. · Uso interno exclusivo para AEs da Datadog · Não compartilhe externamente.</p>
+    <button class="privacy-link" onclick="document.getElementById('privacyModal').classList.add('show')">Política de privacidade &amp; avisos legais</button>
+  </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal-overlay" id="privacyModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Política de Privacidade &amp; Avisos Legais</h2>
+      <button class="modal-close" onclick="document.getElementById('privacyModal').classList.remove('show')">×</button>
+    </div>
+    <div class="modal-section"><h3>1. Finalidade da ferramenta</h3><p>Esta calculadora é uma ferramenta de apoio interno desenvolvida para Account Executives da Datadog. Seu objetivo é fornecer estimativas preliminares de pricing para uso em conversas exploratórias com prospects e clientes. Não substitui o processo oficial de quoting e contracting da Datadog.</p></div>
+    <div class="modal-section"><h3>2. Precisão dos preços</h3><p>Os preços baseiam-se na tabela de preços padrão da Datadog de maio de 2026 e podem não refletir descontos negociados, promoções vigentes, ajustes regionais ou alterações posteriores. Impostos não estão inclusos. Sempre utilize o sistema oficial de quoting para valores definitivos.</p></div>
+    <div class="modal-section"><h3>3. Não constitui oferta vinculante</h3><p>Nenhuma estimativa gerada por esta ferramenta constitui proposta comercial, oferta, cotação oficial ou contrato. Os valores são meramente indicativos. Propostas oficiais só são válidas após aprovação formal da Datadog. A Datadog reserva-se o direito de alterar preços sem aviso prévio.</p></div>
+    <div class="modal-section"><h3>4. Dados inseridos na ferramenta</h3><p>As informações digitadas são processadas localmente no seu navegador e enviadas à API da Anthropic (Claude) para gerar sugestões de produtos. Não insira dados confidenciais de clientes, informações pessoais identificáveis (PII) ou segredos comerciais nesta ferramenta.</p></div>
+    <div class="modal-section"><h3>5. Uso da API da Anthropic</h3><p>O Quote Assistant utiliza a API da Anthropic. Ao usar essa funcionalidade, você concorda com os Termos de Uso da Anthropic. As conversas podem ser processadas nos servidores da Anthropic conforme a política de privacidade desta empresa.</p></div>
+    <div class="modal-section"><h3>6. Uso interno exclusivo</h3><p>Esta ferramenta destina-se ao uso exclusivo de funcionários da Datadog. Não distribua externamente nem apresente como calculadora oficial da Datadog para clientes, parceiros ou terceiros.</p></div>
+    <div class="modal-section"><h3>7. Responsabilidade</h3><p>A Datadog não se responsabiliza por decisões comerciais tomadas com base nas estimativas desta ferramenta. Valide todos os valores junto às fontes oficiais antes de qualquer apresentação formal ao cliente.</p></div>
+    <div class="modal-footer"><p>Última atualização: 21 de maio de 2026 · Datadog, Inc. · Para dúvidas, contate a equipe de Revenue Operations.</p></div>
+    <button class="modal-ok" onclick="document.getElementById('privacyModal').classList.remove('show')">Entendido</button>
+  </div>
+</div>
+
+<script>
+// ── Data ───────────────────────────────────────────────────────────────────
+const CATALOG = {
+  "Infra Host (Pro)":             {f:"Infrastructure",     u:"Host",               m:18,   a:15,    od:18,    al:["5 Containers","100 Custom Metrics","100 Custom Metrics Ingestion","500 Custom Events"]},
+  "Infra Host (Enterprise)":      {f:"Infrastructure",     u:"Host",               m:27,   a:23,    od:27,    al:["10 Containers","200 Custom Metrics","200 Custom Metrics Ingestion","1000 Custom Events"]},
+  "Infra Host (Basic)":           {f:"Infrastructure",     u:"Host",               m:9.3,  a:7.75,  od:9.3,   al:[]},
+  "Infra DevSecOps (Pro)":        {f:"Infrastructure",     u:"Host",               m:27,   a:22,    od:27,    al:["5 Containers DevSecOps","100 Custom Metrics","5 Workflow Automations"]},
+  "Infra DevSecOps (Enterprise)": {f:"Infrastructure",     u:"Host",               m:41,   a:34,    od:41,    al:["10 Containers DevSecOps","200 Custom Metrics","20 Workflow Automations"]},
+  "Containers":                   {f:"Infrastructure",     u:"Container",          m:1,    a:1,     od:0.002, al:[]},
+  "Custom Metrics":               {f:"Infrastructure",     u:"per 100 metrics",    m:5,    a:5,     od:5,     al:[]},
+  "Custom Metrics Ingestion":     {f:"Infrastructure",     u:"per 100 metrics",    m:0.1,  a:0.1,   od:0.1,   al:[]},
+  "Kubernetes Autoscaling":       {f:"Infrastructure",     u:"vCPU",               m:3.6,  a:3.0,   od:4.32,  al:[]},
+  "IOT Device":                   {f:"Infrastructure",     u:"Device",             m:6,    a:5,     od:7.2,   al:[]},
+  "Network Hosts":                {f:"Network Monitoring", u:"Host",               m:6,    a:5,     od:7.2,   al:[]},
+  "SNMP Device Monitoring":       {f:"Network Monitoring", u:"Device",             m:8.5,  a:7,     od:10.2,  al:[]},
+  "Wireless Access Point":        {f:"Network Monitoring", u:"Device",             m:4.8,  a:4,     od:5.76,  al:[]},
+  "Serverless Workloads (Infra)": {f:"Serverless",         u:"Function",           m:6,    a:5,     od:7.2,   al:[]},
+  "Serverless (APM)":             {f:"Serverless",         u:"per M invocations",  m:12,   a:10,    od:15,    al:[]},
+  "Serverless Workloads (Apps)":  {f:"Serverless",         u:"App instance",       m:4,    a:3,     od:4.32,  al:[]},
+  "Cloud Cost Management Pro":    {f:"Cloud Cost",         u:"per 1K monitored",   m:6,    a:5,     od:7.2,   al:[]},
+  "Cloud Cost Management Ent.":   {f:"Cloud Cost",         u:"per 1K monitored",   m:12,   a:10,    od:15,    al:[]},
+  "APM":                          {f:"APM",                u:"Host",               m:36,   a:31,    od:36,    al:["1M Indexed Spans (15d)","150GB Ingested Spans"]},
+  "APM Pro":                      {f:"APM",                u:"Host",               m:42,   a:35,    od:42,    al:["1M Indexed Spans (15d)","150GB Ingested Spans","Data Streams Monitoring"]},
+  "APM Enterprise":               {f:"APM",                u:"Host",               m:48,   a:40,    od:48,    al:["1M Indexed Spans (15d)","150GB Ingested Spans","Profiled Hosts","4 Profiled Containers/host","Data Streams Monitoring"]},
+  "Data Streams Monitoring":      {f:"APM",                u:"Host",               m:18,   a:15,    od:18,    al:[]},
+  "Universal Service Monitoring": {f:"APM",                u:"Host",               m:10.8, a:9,     od:13,    al:[]},
+  "Database Monitoring":          {f:"DBM",                u:"Host",               m:84,   a:70,    od:84,    al:["200 Normalized Queries"]},
+  "Log Events - 3 Days":          {f:"Logs",               u:"per M events",       m:1.27, a:1.06,  od:1.59,  al:[]},
+  "Log Events - 7 Days":          {f:"Logs",               u:"per M events",       m:1.52, a:1.27,  od:1.91,  al:[]},
+  "Log Events - 15 Days":         {f:"Logs",               u:"per M events",       m:2.04, a:1.7,   od:2.55,  al:[]},
+  "Log Events - 30 Days":         {f:"Logs",               u:"per M events",       m:3.0,  a:2.5,   od:3.75,  al:[]},
+  "Log Events - 45 Days":         {f:"Logs",               u:"per M events",       m:3.96, a:3.3,   od:4.95,  al:[]},
+  "Log Events - 60 Days":         {f:"Logs",               u:"per M events",       m:4.92, a:4.1,   od:6.15,  al:[]},
+  "Log Events - 90 Days":         {f:"Logs",               u:"per M events",       m:6.84, a:5.7,   od:8.55,  al:[]},
+  "Log Events - 180 Days":        {f:"Logs",               u:"per M events",       m:12.6, a:10.5,  od:15.75, al:[]},
+  "Log Ingestion":                {f:"Logs",               u:"GB",                 m:0.1,  a:0.1,   od:0.1,   al:[]},
+  "Log Forwarding":               {f:"Logs",               u:"GB",                 m:0.25, a:0.25,  od:0.25,  al:[]},
+  "Flex Logs Starter":            {f:"Logs",               u:"per M events",       m:0.72, a:0.6,   od:0.9,   al:[]},
+  "Sensitive Data Scanner":       {f:"Logs",               u:"GB",                 m:0.36, a:0.3,   od:0.45,  al:[]},
+  "Observability Pipelines":      {f:"Logs",               u:"GB",                 m:0.1,  a:0.1,   od:0.12,  al:[]},
+  "CSM Pro Host":                 {f:"Security",           u:"Host",               m:12,   a:10,    od:12,    al:["5 CSM Pro Containers"]},
+  "CSM Enterprise Host":          {f:"Security",           u:"Host",               m:30,   a:25,    od:30,    al:["20 CSM Enterprise Containers"]},
+  "Workload Protection Hosts":    {f:"Security",           u:"Host",               m:18,   a:15,    od:18,    al:[]},
+  "App and API Protection Hosts": {f:"Security",           u:"Host",               m:36,   a:31,    od:36,    al:[]},
+  "Cloud SIEM (15 months)":       {f:"Security",           u:"Event",              m:6,    a:5,     od:7.5,   al:[]},
+  "Runtime Code Analysis (IAST)": {f:"Code Security",      u:"Host",               m:24,   a:20,    od:29,    al:[]},
+  "Static Code Analysis (SAST)":  {f:"Code Security",      u:"Committer",          m:30,   a:25,    od:36,    al:[]},
+  "Secret Scanning":              {f:"Code Security",      u:"Committer",          m:18,   a:15,    od:22,    al:[]},
+  "Code Security Bundle":         {f:"Code Security",      u:"Committer",          m:48,   a:40,    od:57.6,  al:[]},
+  "RUM Measure":                  {f:"Digital Experience", u:"per 1K sessions",    m:0.18, a:0.15,  od:0.22,  al:[]},
+  "RUM Investigate":              {f:"Digital Experience", u:"per 1K sessions",    m:3.6,  a:3.0,   od:4.5,   al:[]},
+  "RUM Session Replay":           {f:"Digital Experience", u:"per 1K sessions",    m:3.0,  a:2.5,   od:3.6,   al:[]},
+  "Synthetic API Tests":          {f:"Digital Experience", u:"per 10K tests",      m:6,    a:5,     od:7.2,   al:[]},
+  "Synthetic Browser Tests":      {f:"Digital Experience", u:"per 1K tests",       m:15,   a:12,    od:18,    al:[]},
+  "Error Tracking":               {f:"Digital Experience", u:"per 1K errors",      m:30,   a:25,    od:36,    al:[]},
+  "Pipeline Visibility":          {f:"Software Delivery",  u:"Committer",          m:9.6,  a:8,     od:12,    al:[]},
+  "Test Optimization":            {f:"Software Delivery",  u:"Committer",          m:24,   a:20,    od:29,    al:[]},
+  "Code Coverage":                {f:"Software Delivery",  u:"Committer",          m:12,   a:10,    od:15,    al:[]},
+  "On-Call":                      {f:"Service Management", u:"Seat",               m:24,   a:20,    od:29,    al:[]},
+  "Incident Management":          {f:"Service Management", u:"Seat",               m:36,   a:30,    od:43.2,  al:[]},
+  "Enterprise Incident Response": {f:"Service Management", u:"Seat",               m:48,   a:40,    od:58,    al:["Incident Management","On-Call"]},
+  "Workflow Automation":          {f:"Service Management", u:"per 100 executions", m:12,   a:10,    od:14,    al:[]},
+  "App Builder":                  {f:"Service Management", u:"Application",        m:60,   a:50,    od:72,    al:[]},
+  "LLM Observability":            {f:"AI Observability",   u:"per 10K spans",      m:10,   a:8,     od:12,    al:[]},
+  "Bits AI SRE":                  {f:"AI",                 u:"per 20 invest.",     m:600,  a:500,   od:720,   al:[]},
+};
+
+const FAMILY_ORDER = ["Infrastructure","Network Monitoring","Serverless","Cloud Cost","APM","DBM","Logs","Security","Code Security","Digital Experience","Software Delivery","Service Management","AI Observability","AI"];
+const ICONS = {"Infrastructure":"🖥️","Network Monitoring":"🌐","Serverless":"⚡","Cloud Cost":"☁️","APM":"📊","DBM":"🗄️","Logs":"📋","Security":"🔒","Code Security":"🛡️","Digital Experience":"👁️","Software Delivery":"🚀","Service Management":"📟","AI Observability":"🤖","AI":"✨"};
+const TIERS = [
+  {t:500,    l:"Starter",    c:"#6b7280", bg:"#f3f4f6", d:"Acesso à plataforma base"},
+  {t:5000,   l:"Growth",     c:"#2563eb", bg:"#eff6ff", d:"Suporte técnico dedicado"},
+  {t:25000,  l:"Scale",      c:"#7c3aed", bg:"#f5f3ff", d:"Desconto de volume + TAM"},
+  {t:100000, l:"Enterprise", c:"#b45309", bg:"#fffbeb", d:"Executive sponsor + SLA premium"},
+];
+const QUICK = [
+  {l:"3 hosts K8s básico",  t:"Cliente usa 3 nodes Kubernetes. Precisa de infrastructure monitoring básico."},
+  {l:"10h + APM + Logs",    t:"10 hosts com APM Pro e logs por 30 dias, estimativa de 50 milhões de eventos por mês."},
+  {l:"Fintech enterprise",  t:"Fintech com 20 hosts Enterprise, APM Enterprise, CSM Enterprise, logs 90 dias com 200M eventos/mês."},
+  {l:"SaaS small",          t:"SaaS pequeno: 5 hosts Pro, APM básico, logs 15 dias, 20M eventos por mês."},
+  {l:"Full stack",          t:"E-commerce: 15 hosts Pro, APM Pro, Database Monitoring em 3 hosts, RUM Investigate 100K sessões/mês, logs 30 dias 80M eventos."},
+];
+
+// ── State ─────────────────────────────────────────────────────────────────
+let cart = {};           // { name: qty }
+let offerType = "annual";
+let activeFamily = "all";
+let expandedFamilies = new Set(["Infrastructure","APM","Logs"]);
+let chatLoading = false;
+let chatMessages = [{role:"bot", text:"Olá, Pedro! Me descreva o ambiente do cliente em português e vou sugerir os produtos certos com quantidades.\n\nExemplos:\n• \"Cliente usa 3 nodes Kubernetes com APM\"\n• \"Fintech com 20 hosts Enterprise, APM Enterprise, logs 90 dias\"\n• \"SaaS com 10 hosts, quer segurança e observabilidade completa\""}];
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function fmt(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+
+function getRate(name) {
+  const p = CATALOG[name]; if(!p) return 0;
+  return offerType === "annual" ? p.a : offerType === "monthly" ? p.m : p.od;
+}
+
+function calcTotals() {
+  let monthly = 0, annual = 0;
+  Object.entries(cart).forEach(([name, qty]) => {
+    const p = CATALOG[name]; if(!p) return;
+    monthly += getRate(name) * qty;
+    annual  += (offerType === "annual" ? p.a * 12 : getRate(name) * 12) * qty;
+  });
+  return {monthly, annual};
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (id==='ai'?0:1)===i));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='manual') renderManual();
+}
+
+// ── Cart rendering ────────────────────────────────────────────────────────
+function renderCart() {
+  const {monthly, annual} = calcTotals();
+  const panel = document.getElementById('cartPanel');
+  const names = Object.keys(cart);
+
+  // badge
+  const badge = document.getElementById('cartBadge');
+  if(names.length > 0) {
+    badge.textContent = names.length + ' produto' + (names.length>1?'s':'') + ' · ' + fmt(annual) + '/ano';
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+
+  // group by family
+  const grouped = {};
+  names.forEach(name => {
+    const fam = CATALOG[name]?.f || 'Other';
+    if(!grouped[fam]) grouped[fam]=[];
+    grouped[fam].push(name);
+  });
+
+  let cartRows = '';
+  FAMILY_ORDER.filter(f => grouped[f]).forEach(fam => {
+    cartRows += `<div class="cart-family-label">${ICONS[fam]||''} ${fam}</div>`;
+    grouped[fam].forEach(name => {
+      const p = CATALOG[name]; if(!p) return;
+      const qty = cart[name]; const sub = getRate(name)*qty;
+      const un = p.u.length>10?'un':p.u;
+      cartRows += `<div class="cart-row">
+        <div class="cart-row-info">
+          <div class="cart-row-name">${name}</div>
+          <div class="cart-row-price">$${getRate(name)}/${un} · <span class="price-val">${fmt(sub)}/mês</span></div>
+          ${p.al.length>0?`<div class="cart-row-allot">+${p.al.length} allotment${p.al.length>1?'s':''}</div>`:''}
+        </div>
+        <input class="qty-input" type="number" value="${qty}" min="1" onchange="setQty('${name.replace(/'/g,"\\'")}', this.value)">
+        <button class="remove-btn" onclick="removeItem('${name.replace(/'/g,"\\'")}')">×</button>
+      </div>`;
+    });
+  });
+
+  // benefits bar
+  const maxT = TIERS[TIERS.length-1].t;
+  let dotsHtml = '', trackHtml = '';
+  TIERS.forEach((tier,i) => {
+    const done = annual >= tier.t;
+    dotsHtml += `<div class="benefit-dot">
+      <div class="dot-circle${done?' done':''}" style="${done?'background:'+tier.c+';border-color:'+tier.c:''}">
+        ${done?'✓':'○'}
+      </div>
+      <span class="dot-name" style="${done?'color:'+tier.c:''}">${tier.l}</span>
+      <span class="dot-threshold">${tier.t>=1000?'$'+(tier.t/1000)+'K':'$'+tier.t}</span>
+    </div>`;
+    const prev = i===0?0:TIERS[i-1].t;
+    const segW = ((tier.t-prev)/maxT)*100;
+    const fill = annual>=tier.t?100:annual>prev?Math.round(((annual-prev)/(tier.t-prev))*100):0;
+    trackHtml += `<div class="track-seg" style="width:${segW}%"><div class="track-fill" style="background:${tier.c};width:${fill}%"></div></div>`;
+  });
+
+  const unlocked = TIERS.filter(t => annual >= t.t);
+  const cur = unlocked.length>0?unlocked[unlocked.length-1]:null;
+  const nxt = TIERS.find(t => annual < t.t)||null;
+  let statusHtml = '';
+  if(annual < 500) {
+    statusHtml = `<div class="benefits-status">Adicione <strong style="color:var(--dd-purple)">${fmt(500-annual)}/ano</strong> para desbloquear o primeiro nível de benefícios.</div>`;
+  } else if(nxt) {
+    const prev2 = cur?cur.t:0;
+    const prog = Math.min(100,Math.round(((annual-prev2)/(nxt.t-prev2))*100));
+    statusHtml = `<div class="tier-card" style="background:${cur.bg};border:1px solid ${cur.c}33">
+      <div class="tier-card-title" style="color:${cur.c}">✅ Nível ${cur.l} desbloqueado</div>
+      <div class="tier-card-desc">${cur.d}</div>
+      <div class="tier-card-next">Faltam <strong>${fmt(nxt.t-annual)}/ano</strong> para <strong>${nxt.l}</strong> — ${nxt.d}</div>
+      <div class="tier-mini-bar"><div class="tier-mini-fill" style="background:${cur.c};width:${prog}%"></div></div>
+    </div>`;
+  } else {
+    statusHtml = `<div class="tier-card" style="background:#fffbeb;border:1px solid #fcd34d">
+      <div class="tier-card-title" style="color:#b45309">🏆 Nível Enterprise desbloqueado!</div>
+      <div class="tier-card-desc">Executive sponsor dedicado + SLA premium + benefícios customizados.</div>
+    </div>`;
+  }
+
+  panel.innerHTML = `
+    <!-- Offer type -->
+    <div class="card">
+      <span class="card-label">Modelo de contratação</span>
+      <div class="offer-grid">
+        ${[['annual','Annual','save ~17%'],['monthly','M2M','flexível'],['ondemand','On-demand','sem commit']].map(([v,l,s])=>`
+        <div class="offer-opt${offerType===v?' active':''}" onclick="setOfferType('${v}')">
+          <div class="opt-label">${l}</div>
+          <div class="opt-sub">${s}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="card" style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span class="card-label" style="margin-bottom:0">Produtos (${names.length})</span>
+        ${names.length>0?`<button class="cart-clear" onclick="clearCart()">Limpar</button>`:''}
+      </div>
+      ${names.length===0
+        ? `<div class="cart-empty"><div class="cart-empty-icon">📦</div>Nenhum produto selecionado.</div>`
+        : `<div class="cart-list">${cartRows}</div>`}
+    </div>
+
+    <!-- Totals -->
+    <div class="card" style="margin-top:12px">
+      <span class="card-label">Estimativa</span>
+      <div class="totals-row"><span>Total mensal</span><span><strong>${fmt(monthly)}</strong></span></div>
+      <div class="totals-row"><span>Total anual</span><span><strong>${fmt(annual)}</strong></span></div>
+      <div class="totals-divider"></div>
+      <div class="arr-row"><span class="arr-label">ARR</span><span class="arr-value">${fmt(annual)}</span></div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="card" style="margin-top:12px">
+      <span class="card-label">Benefícios por volume (ARR)</span>
+      <div class="benefits-dots">${dotsHtml}</div>
+      <div class="benefits-track">${trackHtml}</div>
+      ${statusHtml}
+    </div>
+
+    <!-- Export -->
+    <button class="export-btn" id="exportBtn" onclick="exportQuote()" ${names.length===0?'disabled':''}>
+      📋 Copiar resumo da quote
+    </button>
+
+    <!-- Legal -->
+    <div class="legal-notes">
+      <div>⚠ Impostos não estão inclusos nos valores apresentados.</div>
+      <div>⚠ Propostas oficiais só são válidas após aprovação formal da Datadog.</div>
+      <div>⚠ Valores sujeitos a alteração sem aviso prévio.</div>
+    </div>`;
+}
+
+function setOfferType(v) { offerType=v; renderCart(); renderManual(); }
+function setQty(name, val) { const q=Math.max(1,parseInt(val)||1); cart[name]=q; renderCart(); }
+function removeItem(name) { delete cart[name]; renderCart(); renderManual(); }
+function clearCart() { cart={}; renderCart(); renderManual(); }
+function addToCart(name) { if(!cart[name]) cart[name]=1; renderCart(); renderManual(); }
+function toggleCart(name) { if(cart[name]) delete cart[name]; else cart[name]=1; renderCart(); renderManual(); }
+
+function exportQuote() {
+  const {monthly,annual}=calcTotals();
+  if(Object.keys(cart).length===0) return;
+  const ol = offerType==='annual'?'Annual':offerType==='monthly'?'Month-to-Month':'On-demand';
+  let txt = 'DATADOG PRICING ESTIMATE\nOferta: '+ol+' | Data: '+new Date().toLocaleDateString('pt-BR')+'\n'+'─'.repeat(52)+'\n\nPRODUTOS:\n';
+  Object.entries(cart).forEach(([name,qty])=>{
+    const p=CATALOG[name]; if(!p) return;
+    const r=getRate(name);
+    txt+='  • '+name+': '+qty+' '+p.u+' × $'+r+' = '+fmt(r*qty)+'/mês\n';
+    if(p.al.length) txt+='    ↳ Inclui: '+p.al.join(', ')+'\n';
+  });
+  txt+='\n'+'─'.repeat(52)+'\nTOTAL MENSAL:  '+fmt(monthly)+'\nTOTAL ANUAL:   '+fmt(annual)+'\nARR:           '+fmt(annual);
+  txt+='\n'+'─'.repeat(52)+'\n⚠ FOR INFORMATIONAL PURPOSES ONLY — NOT A BINDING QUOTE\n⚠ Impostos não inclusos. Propostas só válidas após aprovação formal da Datadog.';
+  navigator.clipboard.writeText(txt);
+  const btn=document.getElementById('exportBtn');
+  btn.textContent='✓ Copiado!'; btn.classList.add('success');
+  setTimeout(()=>{btn.textContent='📋 Copiar resumo da quote';btn.classList.remove('success');},2000);
+}
+
+// ── Manual tab ────────────────────────────────────────────────────────────
+function renderManual() {
+  const search = document.getElementById('searchInput')?.value.toLowerCase()||'';
+
+  // family pills
+  const pils = document.getElementById('familyPills');
+  const allFamilies = FAMILY_ORDER.filter(f => Object.values(CATALOG).some(p=>p.f===f));
+  pils.innerHTML = ['all',...allFamilies].map(f=>`
+    <button class="family-pill${activeFamily===f?' active':''}" onclick="setFamily('${f}')">
+      ${f==='all'?'Todos':(ICONS[f]||'')+' '+f}
+    </button>`).join('');
+
+  // filter
+  const filtered = Object.entries(CATALOG).filter(([name,p])=>{
+    const mf = activeFamily==='all'||p.f===activeFamily;
+    const ms = !search||name.toLowerCase().includes(search)||p.f.toLowerCase().includes(search);
+    return mf&&ms;
+  });
+  const grouped={};
+  filtered.forEach(([name,p])=>{ if(!grouped[p.f]) grouped[p.f]=[]; grouped[p.f].push([name,p]); });
+
+  const groups = document.getElementById('productGroups');
+  const ordFams = FAMILY_ORDER.filter(f=>grouped[f]);
+  if(ordFams.length===0){
+    groups.innerHTML=`<div style="text-align:center;padding:32px 0;color:var(--text-faint);font-size:13px">Nenhum produto encontrado para "${search}"</div>`;
+    return;
+  }
+
+  groups.innerHTML = ordFams.map(fam=>{
+    const selCount = grouped[fam].filter(([n])=>cart[n]).length;
+    const isOpen = expandedFamilies.has(fam)||search;
+    const rows = grouped[fam].map(([name,p])=>{
+      const inCart=!!cart[name]; const qty=cart[name]||1;
+      return `<div class="prod-row${inCart?' in-cart':''}">
+        <input type="checkbox" class="prod-row-check" ${inCart?'checked':''} onchange="toggleCart('${name.replace(/'/g,"\\'")}')">
+        <div class="prod-row-info">
+          <div class="prod-row-name">${name}</div>
+          <div class="prod-row-meta">Annual: <strong>$${p.a}</strong> · M2M: $${p.m} · ${p.u}${p.al.length>0?` <span class="allot-flag">· +allotments</span>`:''}</div>
+        </div>
+        ${inCart
+          ?`<div class="qty-controls">
+              <button class="qty-btn" onclick="setQty('${name.replace(/'/g,"\\'")}',${qty-1})" ${qty<=1?'disabled':''}>−</button>
+              <input class="qty-input" type="number" value="${qty}" min="1" style="width:44px" onchange="setQty('${name.replace(/'/g,"\\'")}',this.value)">
+              <button class="qty-btn" onclick="setQty('${name.replace(/'/g,"\\'")}',${qty+1})">+</button>
+            </div>`
+          :`<button class="add-btn" onclick="addToCart('${name.replace(/'/g,"\\'")}')">+ Adicionar</button>`}
+      </div>`;
+    }).join('');
+    return `<div class="prod-group">
+      <button class="prod-group-header${isOpen?' open':''}" onclick="toggleFamily('${fam}')">
+        <span class="prod-group-title">${ICONS[fam]||''} ${fam}</span>
+        <div class="prod-group-right">
+          ${selCount>0?`<span class="selected-badge">${selCount} selecionado${selCount>1?'s':''}</span>`:''}
+          <span class="prod-group-chevron">${isOpen?'▲':'▼'}</span>
+        </div>
+      </button>
+      <div class="prod-group-body${isOpen?' open':''}">${rows}</div>
+    </div>`;
+  }).join('');
+}
+
+function setFamily(f) { activeFamily=f; renderManual(); }
+function toggleFamily(f) {
+  if(expandedFamilies.has(f)) expandedFamilies.delete(f); else expandedFamilies.add(f);
+  renderManual();
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────
+function renderChat() {
+  const box = document.getElementById('chatBox');
+  box.innerHTML = chatMessages.map(m=>`
+    <div class="msg ${m.role}${m.loading?' loading':''}">
+      <div class="bubble">${m.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+function buildPrompt() {
+  const lines = Object.entries(CATALOG).map(([n,p])=>
+    `- "${n}" (${p.f}): $${p.a}/unit/mês annual, $${p.m}/unit M2M, unidade: ${p.u}${p.al.length?' | allotments: '+p.al.join(', '):''}`)
+    .join('\n');
+  return `Você é um assistente especialista em vendas Datadog para Pedro, Account Executive da Datadog no Brasil (LATAM CAE). Analise descrições de ambiente de clientes e sugira produtos com quantidades como um Solutions Engineer experiente.\n\nCATÁLOGO:\n${lines}\n\nREGRAS:\n1. Infra Host é sempre a base\n2. APM hosts ≤ Infra hosts\n3. CSM Enterprise / Workload Protection / USM hosts ≤ Infra hosts\n4. Kubernetes: cada node = 1 host\n5. Log Events precisa de retenção definida\n6. DBM requer Infra Host\n7. APM Enterprise já inclui Profiled Hosts e Data Streams\n8. APM Pro inclui Data Streams Monitoring\n\nRETORNE APENAS JSON VÁLIDO sem markdown:\n{"message":"Explicação amigável em português (máx 4 frases). Mencione allotments relevantes.","products":[{"name":"NOME_EXATO","qty":NUMERO}]}\n\nSe só explicação: products=[]. Se precisar de info: explique no message e products=[].`;
+}
+
+async function sendChat(quickText) {
+  if(chatLoading) return;
+  const input = document.getElementById('chatInput');
+  const msg = (quickText||input.value).trim();
+  if(!msg) return;
+  input.value=''; chatLoading=true;
+  document.getElementById('chatSend').disabled=true;
+
+  chatMessages.push({role:'user',text:msg});
+  chatMessages.push({role:'bot',text:'…',loading:true});
+  renderChat();
+
+  const cartCtx = Object.keys(cart).length>0
+    ? 'Quote atual:\n'+Object.entries(cart).map(([n,q])=>`- ${n}: ${q} unidades`).join('\n')+'\n\n'
+    : '';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildPrompt(),messages:[{role:'user',content:cartCtx+msg}]})
+    });
+    const data = await resp.json();
+    const raw = (data.content&&data.content.find(b=>b.type==='text')?data.content.find(b=>b.type==='text').text:'')||'';
+    let parsed;
+    try { parsed=JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch(e){ parsed={message:raw||'Não consegui processar. Tente reformular.',products:[]}; }
+
+    chatMessages[chatMessages.length-1]={role:'bot',text:parsed.message,loading:false};
+    if(parsed.products&&parsed.products.length>0){
+      parsed.products.forEach(p=>{ if(CATALOG[p.name]) cart[p.name]=p.qty; });
+      renderCart();
+    }
+  } catch(e){
+    chatMessages[chatMessages.length-1]={role:'bot',text:'Erro de conexão. Tente novamente.',loading:false};
+  }
+  chatLoading=false;
+  document.getElementById('chatSend').disabled=false;
+  renderChat();
+}
+
+// ── Quick prompts ─────────────────────────────────────────────────────────
+function initQuick() {
+  const row = document.getElementById('quickRow');
+  row.innerHTML = QUICK.map(q=>`<button class="quick-btn" onclick="sendChat('${q.t.replace(/'/g,"\\'")}')">${q.l}</button>`).join('');
+}
+
+// ── Key handler ───────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('chatInput').addEventListener('keydown', e=>{
+    if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendChat(); }
+  });
+  initQuick();
+  renderChat();
+  renderCart();
+  renderManual();
+});
+</script>
+</body>
+</html>
